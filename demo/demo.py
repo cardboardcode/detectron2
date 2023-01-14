@@ -138,8 +138,21 @@ if __name__ == "__main__":
         assert args.output is None, "output not yet supported with --webcam!"
         cam = cv2.VideoCapture(0)
         for vis in tqdm.tqdm(demo.run_on_video(cam)):
-            cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-            cv2.imshow(WINDOW_NAME, vis)
+            cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_KEEPRATIO)
+
+            # Determine scaling to fixed size.
+            OUTPUT_HEIGHT = 500
+            input_height = vis.shape[0]
+            resize_scaling = OUTPUT_HEIGHT/input_height
+
+            # Resize camera frame image to fixed size for easy viewing.
+            vis_resized = cv2.resize(vis, (int(vis.shape[1] * resize_scaling), int(vis.shape[0] * resize_scaling)))
+
+            # Resize OpenCV display window to dimensions of vis_resized cv::Mat image.
+            cv2.resizeWindow(WINDOW_NAME, vis_resized.shape[1], vis_resized.shape[0])
+            
+            # Display vis_resized.
+            cv2.imshow(WINDOW_NAME, vis_resized)
             if cv2.waitKey(1) == 27:
                 break  # esc to quit
         cam.release()
